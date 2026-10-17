@@ -414,80 +414,65 @@
   // -----------------------------------------------------------------------------------------------
   // The tour
 
+  // One continuous session, the way a person would use the app: nothing resets between steps,
+  // and the window and page size never change.
   var steps = [
     {
-      name: "Pages", base: "start", run: async function () {
-        say("Pages, like Preview.", "Files open as pages with numbered thumbnails. Click one to jump; the selection follows as you scroll.");
-        await sleep(900);
-        await click(q('#thumb-list button[aria-label="Page 2"]'), true);
-        await sleep(900);
-        await click(q('#thumb-list button[aria-label="Page 3"]'), true);
-        await sleep(900);
-        pv.scrollBy({ top: -420, behavior: "smooth" });
+      name: "Read", base: "start", run: async function () {
+        say("Reading.", "The plan opens as pages, with numbered thumbnails on the left.");
+        await sleep(1200);
+        pv.scrollBy({ top: 360, behavior: "smooth" });
         await sleep(1300);
-        await click(q("#page-bar .pb-button[aria-label='Next page']"), true);
+        await click(q('#thumb-list button[aria-label="Page 2"]'), true);
+        await sleep(1400);
+        await click(q('#thumb-list button[aria-label="Page 1"]'), true);
         await sleep(900);
       }
     },
     {
-      name: "Two pages", base: "start", run: async function () {
-        say("Two pages side by side.", "Read like an open book. ← and → turn a pair at a time, and the whole spread fits the window.");
-        pv.mdSetLayout({ zoomMode: "fitPage" });
-        await sleep(700);
-        await click(q("#page-bar .pb-spread"), true);
-        await sleep(1000);
-        await key("→", function () { pressInPreview("ArrowRight"); });
-        await sleep(700);
-        await key("→", function () { pressInPreview("ArrowRight"); });
-        await sleep(700);
-        await key("←", function () { pressInPreview("ArrowLeft"); });
-        await sleep(900);
-      }
-    },
-    {
-      name: "Find", base: "start", run: async function () {
-        say("Find in the formatted text.", "⌘F searches what you read, across bold, links and code, and across page breaks.");
+      name: "Find", run: async function () {
+        say("Finding.", "⌘F searches the formatted text.");
         await key("⌘F", function () { pv.mdFindOpen(); });
-        var input = q("#find-input");
-        await typeInto(input, "export", pv, 90);
-        await sleep(800);
+        await typeInto(q("#find-input"), "row limit", pv, 85);
+        await sleep(900);
         await click(q('#find-bar button[aria-label="Next match"]'), true);
-        await sleep(700);
-        await click(q('#find-bar button[aria-label="Next match"]'), true);
-        await sleep(700);
-        await click(q('#find-bar button[aria-label="Next match"]'), true);
-        await sleep(1000);
+        await sleep(1100);
+        await key("esc", function () { pv.mdFindClose(); });
+        await sleep(500);
       }
     },
     {
-      name: "Highlights & notes", base: "start", run: async function () {
-        say("Highlight and take notes.", "Select text and pick a color, or add a note. Notes sit in the margin beside their passage and never touch the file.");
+      name: "Highlight", run: async function () {
+        say("Highlighting.", "Select text and pick a color.");
         await dragSelect("No report should take more than a minute to export.");
         await click(q(".anno-pop .anno-s-yellow"), true);
-        await sleep(600);
+        await sleep(700);
         await dragSelect("Should exports include archived rows?");
         await click(q(".anno-pop .anno-s-green"), true);
-        await sleep(600);
+        await sleep(700);
+      }
+    },
+    {
+      name: "Note", run: async function () {
+        say("Taking a note.", "Notes sit in the margin beside their passage. They never change the file.");
         await dragSelect("The delivery timeline depends on the vendor's storage API.");
         await click(Array.prototype.filter.call(pdoc.querySelectorAll(".anno-pop .anno-pop-btn"), function (b) { return b.textContent === "Add Note"; })[0], true);
         await sleep(300);
         var t = q("#doc .anno-card:not([hidden]) textarea");
-        if (t) { t.value = ""; await typeInto(t, "Confirm the sandbox date with the vendor before Friday.", pv, 38); }
+        if (t) { t.value = ""; await typeInto(t, "Confirm the sandbox date with the vendor before Friday.", pv, 40); }
         await sleep(900);
-        await click(q("#side-tab-notes"), true);
-        await sleep(1500);
+        var card = t && t.closest(".anno-card");
+        var marker = card && q('#doc .anno-marker[data-anno="' + card.dataset.anno + '"]');
+        if (marker) await click(marker, true);
+        await sleep(700);
       }
     },
     {
-      name: "Agent edits", base: "annotated", run: async function () {
-        say("Then agents edit the file.", "Two coding agents change the plan and check in their edits. The open document refreshes on its own.");
-        await sleep(600);
+      name: "Agents", run: async function () {
+        say("Agents edit the file.", "Two coding agents change the plan and check in their edits. The open document refreshes on its own.");
         showAgent("planner");
-        await agentLine("$ mdeditdiff changes export-plan.md --reader planner", "cmd", true);
-        await agentLine("  Up to date with r1. Editing the plan…", "dim");
-        await sleep(500);
-        applyRevision("r2");
         await agentLine("$ mdeditdiff checkpoint export-plan.md --author planner \\\n    --note \"Added streaming and a row limit\"", "cmd", true);
+        applyRevision("r2");
         await agentLine("  ✓ Recorded r2", "ok");
         await sleep(900);
         showAgent("reviewer");
@@ -496,73 +481,74 @@
         await agentLine("  ✓ Recorded r3", "ok");
         await sleep(1100);
         hideAgent();
-        say("You see exactly what changed.", "The toolbar counts changes since you last read, and the bar names who made them. Your note followed its passage; the highlighted question was removed, so it waits under Needs Reattachment.");
+        say("Seeing what changed.", "The toolbar counts the changes, and the bar names who made them. Your note followed its passage.");
         await pointTo($("changes"), false);
-        await sleep(1200);
+        await sleep(1300);
         await click(q("#side-tab-notes"), true);
-        await sleep(1800);
+        await sleep(1900);
+        await click(q("#side-tab-pages"), true);
+        await sleep(500);
       }
     },
     {
-      name: "Review & restore", base: "agent", run: async function () {
-        say("Review, restore, mark as read.", "Step through each change. Bring back a removed passage as an unsaved edit. Then mark the file as read.");
+      name: "Review", run: async function () {
+        say("Reviewing.", "Step through each change, then bring back the removed question.");
         await click($("changes"), false);
-        await sleep(1100);
+        await sleep(1200);
         await click($("changes"), false);
-        await sleep(1100);
+        await sleep(1200);
         var restore = q("#doc .md-restore");
         if (restore) {
-          restore.scrollIntoView({ block: "center" });
-          await sleep(500);
+          restore.scrollIntoView({ block: "center", behavior: "smooth" });
+          await sleep(700);
           await click(restore, true);
           await sleep(1300);
         }
-        pv.scrollTo({ top: 0, behavior: "smooth" });
-        await sleep(700);
-        await click(q("#review-bar .rb-button.primary"), true);
-        await sleep(1300);
       }
     },
     {
-      name: "History", base: "agent", run: async function () {
-        say("Every version, with who and why.", "History lists each version with the agent's note. Compare any version with the current text, or restore it.");
+      name: "History", run: async function () {
+        say("Checking history.", "Every version, with who made it and why. Compare any of them with now.");
+        pv.scrollTo({ top: 0, behavior: "smooth" });
         await click($("history-button"), false);
         await sleep(1000);
         var items = pdoc.querySelectorAll("#history .hp-item");
         var r2 = Array.prototype.filter.call(items, function (li) { return li.querySelector(".hp-rev").textContent === "r2"; })[0];
-        var compare = r2 && r2.querySelector(".hp-actions .rb-button");
-        await click(compare, true);
-        await sleep(1800);
-        pv.mdHideHistory();
+        await click(r2 && r2.querySelector(".hp-actions .rb-button"), true);
+        await sleep(1700);
+        await click(q("#history .hp-head .rb-button"), true);
+        await sleep(400);
         await click(q('#review-bar button[aria-label="Stop comparing"]'), true);
         await sleep(900);
+        await click(q("#review-bar .rb-button.primary"), true);
+        say("Marked as read.", "Up to date. Next time, you'll only see what changed after this.");
+        await sleep(1500);
       }
     },
     {
-      name: "Edit & Split", base: "start", run: async function () {
-        say("Edit the Markdown, see it live.", "Split shows the source next to the pages. Saves change only what you changed.");
-        await click(document.querySelector('.modes button[data-mode="split"]'), false);
-        await sleep(900);
+      name: "Edit", run: async function () {
+        say("Editing.", "Edit mode shows the Markdown itself. Saves change only what you changed.");
+        await click(document.querySelector('.modes button[data-mode="edit"]'), false);
+        await sleep(700);
         var at = source.value.indexOf(D.typedAfter);
         if (at >= 0) {
           var pos = at + D.typedAfter.length;
           var lineNo = source.value.slice(0, pos).split("\n").length;
-          source.scrollTop = Math.max(0, lineNo * 20.6 - 200);
+          source.scrollTop = Math.max(0, lineNo * 20.6 - 180);
           await pointTo(source, false);
           for (var i = 0; i < D.typed.length; i++) {
             source.value = source.value.slice(0, pos + i) + D.typed.charAt(i) + source.value.slice(pos + i);
             source.dispatchEvent(new Event("input", { bubbles: true }));
             await sleep(55);
           }
-          await sleep(500);
-          var added = findRange("Add a help article and a short video.");
-          if (added) added.startContainer.parentElement.scrollIntoView({ block: "center" });
         }
-        await sleep(1500);
-        await click(document.querySelector('.modes button[data-mode="edit"]'), false);
-        await sleep(1100);
-        await click(document.querySelector('.modes button[data-mode="read"]'), false);
         await sleep(900);
+        await click(document.querySelector('.modes button[data-mode="read"]'), false);
+        await sleep(500);
+        var added = findRange("Add a help article and a short video.");
+        if (added) added.startContainer.parentElement.scrollIntoView({ block: "center", behavior: "smooth" });
+        say("Back to reading.", "The new step is there, formatted. Watch it again, or try it yourself.");
+        await sleep(2600);
       }
     }
   ];
@@ -583,12 +569,12 @@
     chips.querySelectorAll(".chip").forEach(function (c, k) {
       if (k === i) c.setAttribute("aria-current", "step"); else c.removeAttribute("aria-current");
     });
-    progress.textContent = (i + 1) + " / " + steps.length;
+    progress.textContent = "";
   }
 
   function setPlayButton() {
     var p = $("play");
-    p.textContent = playing ? "Ⅱ Pause tour" : "▶ Play tour";
+    p.textContent = playing ? "Ⅱ Pause" : "▶ Play";
     p.setAttribute("aria-pressed", String(playing));
   }
 
@@ -600,7 +586,7 @@
       for (var k = i; ; k = (k + 1) % steps.length) {
         current = k;
         markChip(k);
-        await base(steps[k].base);
+        if (steps[k].base) await base(steps[k].base);
         if (token !== run) return;
         await steps[k].run();
         await sleep(1400);
@@ -624,16 +610,18 @@
     var b = document.createElement("b");
     b.textContent = "Your turn.";
     caption.appendChild(b);
-    caption.appendChild(document.createTextNode(" This is the app's real preview: select text to highlight, use the page bar, switch to Edit and type. "));
+    caption.appendChild(document.createTextNode(" Select text to highlight it, use the page bar, or switch to Edit and type. "));
     var r = document.createElement("button");
     r.type = "button";
     r.className = "resume";
-    r.textContent = "Resume the tour";
-    r.addEventListener("click", function () { playFrom(current); });
+    r.textContent = "Watch again";
+    r.addEventListener("click", function () { playFrom(0); });
     caption.appendChild(r);
   }
 
-  $("play").addEventListener("click", function () { if (playing) stopTour(); else playFrom(current); });
+  $("play").addEventListener("click", function () { if (playing) stopTour(); else playFrom(0); });
+  // No topic chips: the play button sits with the caption.
+  document.querySelector(".caption-side").insertBefore($("play"), $("reset"));
   $("reset").addEventListener("click", function () {
     stopTour(true);
     base(scenario === "review" ? "agent" : "start").then(function () {
@@ -668,7 +656,7 @@
     base("agent").then(reviewHint);
   } else {
     base("start").then(function () {
-      say("A live demo of the real app.", "The document below runs mdEditDiff's own preview code. Press Play, pick a topic, or just try it.");
+      say("A live demo of the real app.", "This window runs mdEditDiff's own preview code. Watch, or click anywhere to try it.");
       markChip(0);
       if (reduceMotion || !("IntersectionObserver" in window)) return;
       var autoPaused = false, started = false;
@@ -676,7 +664,7 @@
         var visible = entries[0].intersectionRatio >= 0.55;
         if (visible && !started) { started = true; playFrom(0); return; }
         if (!visible && playing) { autoPaused = true; stopTour(true); }
-        else if (visible && autoPaused) { autoPaused = false; playFrom(current); }
+        else if (visible && autoPaused) { autoPaused = false; playFrom(0); }
       }, { threshold: [0, 0.55, 1] }).observe($("window"));
     });
   }
