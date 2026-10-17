@@ -1,11 +1,7 @@
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="app/Icon/AppIcon-Dark-1024.png">
-  <img src="app/Icon/AppIcon-1024.png" alt="mdEditDiff app icon: the letters md above a green bar and a struck-through red bar" width="112" align="right">
+  <source media="(prefers-color-scheme: dark)" srcset=".github/assets/masthead-dark.svg">
+  <img src=".github/assets/masthead-light.svg" width="100%" alt="mdEditDiff: an editor for people, a diff for agents. See what changed in a Markdown file since you last looked, and who changed it. By Vinay Roy.">
 </picture>
-
-# mdEditDiff
-
-**An editor for people, a diff for agents. See what changed in a Markdown file since you last looked, and who changed it.**
 
 **[Website and live demo](https://roy-vinay.github.io/mdeditdiff/)** · [Download for Mac](https://github.com/roy-vinay/mdeditdiff/releases/latest/download/mdEditDiff-macOS.zip)
 
