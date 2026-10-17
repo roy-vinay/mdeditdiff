@@ -6,7 +6,7 @@
 
   var D = window.MDDemoData;
   var params = new URLSearchParams(location.search);
-  var scenario = params.get("scenario") === "review" ? "review" : "tour";
+  var scenario = ["review", "kinetic"].indexOf(params.get("scenario")) >= 0 ? params.get("scenario") : "tour";
   var $ = function (id) { return document.getElementById(id); };
   var demoEl = $("demo"), frame = $("preview"), source = $("source"), content = $("content");
   var cursor = $("cursor"), caption = $("caption"), progress = $("progress");
@@ -567,6 +567,135 @@
     }
   ];
 
+  // -----------------------------------------------------------------------------------------------
+  // The kinetic hero: no chips or captions; the view zooms to what each headline word is about
+
+  var winEl = $("window");
+  var camScale = 1;
+
+  /** Position of an element relative to the window, ignoring the zoom (offsets aren't transformed,
+      and a rectangle inside the preview frame is relative to the frame). */
+  function offsetIn(el) {
+    if (el.ownerDocument !== document) {
+      var r = el.getBoundingClientRect();
+      var o = offsetIn(frame);
+      return { x: o.x + r.left, y: o.y + r.top, w: r.width, h: r.height };
+    }
+    var x = 0, y = 0, w = el.offsetWidth, h = el.offsetHeight;
+    while (el && el !== winEl) { x += el.offsetLeft; y += el.offsetTop; el = el.offsetParent; }
+    return { x: x, y: y, w: w, h: h };
+  }
+
+  /** Zooms the window so `el` is centered at `scale`; with no element, shows the whole window. */
+  function camera(el, scale) {
+    if (!el || reduceMotion) { camScale = 1; winEl.style.transform = ""; return; }
+    var W = winEl.offsetWidth, H = winEl.offsetHeight;
+    var b = offsetIn(el);
+    var s = scale || 1.5;
+    var tx = W / 2 - (b.x + b.w / 2) * s, ty = H / 2 - (b.y + b.h / 2) * s;
+    tx = Math.min(0, Math.max(W - W * s, tx));
+    ty = Math.min(0, Math.max(H - H * s, ty));
+    camScale = s;
+    winEl.style.transform = "translate(" + tx + "px," + ty + "px) scale(" + s + ")";
+  }
+
+  /** Scrolls the preview (and only the preview, never the page around the demo) to an element. */
+  function scrollPreviewTo(el) {
+    var r = el.getBoundingClientRect();
+    pv.scrollTo(0, Math.max(0, pv.scrollY + r.top + r.height / 2 - pv.innerHeight / 2));
+  }
+
+  function hero(i) {
+    try { if (window.parent !== window && window.parent.mdHeroWord) window.parent.mdHeroWord(i); } catch (e) { /* ignore */ }
+  }
+
+  var kineticSteps = [
+    {
+      name: "Read it.", base: "start", run: async function () {
+        hero(0);
+        camera(null);
+        pv.mdSetLayout({ zoomMode: "fitWidth" });
+        await sleep(1400);
+        q('#thumb-list button[aria-label="Page 2"]').click();
+        await sleep(1300);
+        q('#thumb-list button[aria-label="Page 3"]').click();
+        await sleep(1100);
+        q('#thumb-list button[aria-label="Page 1"]').click();
+        await sleep(700);
+      }
+    },
+    {
+      name: "Mark it.", base: "start", run: async function () {
+        hero(1);
+        camera(null);
+        var r = findRange("No report should take more than a minute to export.");
+        scrollPreviewTo(r.startContainer.parentElement);
+        await sleep(150);
+        camera(r.startContainer.parentElement.closest("ul") || r.startContainer.parentElement, 1.7);
+        await sleep(900);
+        annotate("No report should take more than a minute to export.", "highlight", "yellow");
+        clearSelection();
+        await sleep(900);
+        var n = annotate("The delivery timeline depends on the vendor's storage API.", "note");
+        clearSelection();
+        var card = n && pdoc.querySelector('#doc .anno-card[data-anno="' + n.id + '"]');
+        if (card) {
+          camera(card, 1.55);
+          var t = card.querySelector("textarea");
+          t.value = "";
+          await sleep(500);
+          await typeInto(t, "Confirm the sandbox date with the vendor.", pv, 28);
+        }
+        await sleep(900);
+      }
+    },
+    {
+      name: "Track it.", base: "annotated", run: async function () {
+        hero(2);
+        camera(null);
+        await sleep(500);
+        applyRevision("r2");
+        await sleep(600);
+        applyRevision("r3");
+        await sleep(300);
+        camera(q("#review-bar"), 1.45);
+        await sleep(1700);
+        var first = q("#doc .md-ins") || q("#doc .md-change");
+        if (first) { scrollPreviewTo(first); await sleep(100); camera(first.closest("li, p") || first, 1.6); }
+        await sleep(1700);
+      }
+    },
+    {
+      name: "Restore it.", base: "agent", run: async function () {
+        hero(3);
+        camera(null);
+        var restore = q("#doc .md-restore");
+        if (!restore) return;
+        var block = restore.closest(".md-removed") || restore;
+        scrollPreviewTo(block);
+        await sleep(300);
+        camera(block, 1.7);
+        await sleep(1400);
+        restore.click();
+        await sleep(300);
+        var back = findRange("Should exports include archived rows?");
+        if (back) camera(back.startContainer.parentElement.closest("ul") || back.startContainer.parentElement, 1.7);
+        await sleep(1800);
+      }
+    }
+  ];
+
+  if (scenario === "kinetic") {
+    demoEl.classList.add("kinetic");
+    var cam = document.createElement("div");
+    cam.className = "cam";
+    winEl.parentNode.insertBefore(cam, winEl);
+    cam.appendChild(winEl);
+    steps = kineticSteps;
+  }
+
+  window.mdDemoSetMode = function (m) { stopTour(true); setMode(m); };
+
   // Chips
   var chips = $("chips");
   steps.forEach(function (s, i) {
@@ -592,10 +721,15 @@
     p.setAttribute("aria-pressed", String(playing));
   }
 
+  function heroPaused(paused) {
+    try { if (window.parent !== window && window.parent.mdHeroPaused) window.parent.mdHeroPaused(paused); } catch (e) { /* ignore */ }
+  }
+
   async function playFrom(i) {
     var token = ++run;
     playing = true;
     setPlayButton();
+    if (scenario === "kinetic") heroPaused(false);
     try {
       for (var k = i; ; k = (k + 1) % steps.length) {
         current = k;
@@ -616,6 +750,7 @@
     setPlayButton();
     cursor.classList.remove("on");
     $("keycap").hidden = true;
+    if (scenario === "kinetic") { camera(null); if (!quiet) heroPaused(true); }
     if (!quiet && scenario === "tour") yourTurn();
   }
 
@@ -662,12 +797,15 @@
     progress.textContent = "";
   }
 
-  // Start: the review scenario is hands-on; the tour plays while it's on screen.
+  window.mdDemoResume = function () { playFrom(current); };
+
+  // Start: the review scenario is hands-on; the tour and the hero play while they're on screen.
   if (scenario === "review") {
     demoEl.classList.add("no-tour");
     base("agent").then(reviewHint);
   } else {
     base("start").then(function () {
+      if (scenario === "kinetic") { hero(0); pv.mdSetLayout({ zoomMode: "fitWidth" }); }
       say("A live demo of the real app.", "The document below runs mdEditDiff's own preview code. Press Play, pick a topic, or just try it.");
       markChip(0);
       if (reduceMotion || !("IntersectionObserver" in window)) return;
@@ -677,7 +815,7 @@
         if (visible && !started) { started = true; playFrom(0); return; }
         if (!visible && playing) { autoPaused = true; stopTour(true); }
         else if (visible && autoPaused) { autoPaused = false; playFrom(current); }
-      }, { threshold: [0, 0.55, 1] }).observe($("window"));
+      }, { threshold: [0, 0.55, 1] }).observe(demoEl);
     });
   }
 
