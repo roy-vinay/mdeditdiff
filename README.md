@@ -7,6 +7,8 @@
 
 **An editor for people, a diff for agents. See what changed in a Markdown file since you last looked, and who changed it.**
 
+**[Website and live demo](https://roy-vinay.github.io/mdeditdiff/)** · [Download for Mac](https://github.com/roy-vinay/mdeditdiff/releases/latest/download/mdEditDiff-macOS.zip)
+
 mdEditDiff is a free, open-source tool (MIT license) for anyone who works on Markdown files alongside AI
 agents. It has two parts: a command-line tool and MCP server for agents, and a native Mac app for people.
 
