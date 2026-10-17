@@ -12,8 +12,20 @@ Publish this directory as the root of `roy-vinay/mdeditdiff`. Under Settings →
 
 The product source and releases remain at https://github.com/roy-vinay/applied-ai-agents/tree/main/tools/mdeditdiff. This repository holds the website only.
 
+## Live demos
+
+The two demos on the page (`demo/app.html`, and `demo/app.html?scenario=review`) run the Mac app's real preview code, copied unchanged into `demo/engine/` from the release named in `demo/engine/VERSION`. Around it, `demo/app.js` plays the part of the app: the toolbar, the editor, the history the command-line tool would keep, two agents editing the file, and a guided tour that only plays while the demo is on screen and stops when a visitor takes over. `demo/engine/preview.html` and `bridge.js` are the only demo-specific engine files.
+
+The demos need to be served over HTTP (as GitHub Pages does) because the demo window talks to the preview frame directly; opening `index.html` from disk won't run them.
+
 ## Maintenance
 
-The site links to the verified v0.5.3 release. Update the visible version, download URLs, installation command, and feature status together when promoting a new release. Screenshots were copied from the public product repository. The interactive sample is illustrative and is labeled accordingly.
+When promoting a new release, update the visible version, download URLs, installation command and feature status together, then refresh the demo engine:
 
-Use relative asset links to support project-path hosting. The icon and screenshots are from the MIT-licensed mdEditDiff project. Page source is also provided under MIT.
+```
+scripts/sync-engine.sh mdeditdiff-v0.5.3   # or no argument for the latest release
+```
+
+If a release changes the preview's messages or functions, adjust `demo/app.js` to match and check every tour step. Screenshots were copied from the public product repository.
+
+Use relative asset links to support project-path hosting. The icon, screenshots and the files in `demo/engine/` are from the MIT-licensed mdEditDiff project (markdown-it's license is in `demo/engine/THIRD_PARTY_LICENSES.txt`). Page source is also provided under MIT.
