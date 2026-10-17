@@ -93,10 +93,3 @@ button:focus-visible, textarea:focus-visible { outline: 2px solid var(--accent);
 @keyframes ping { from { transform: scale(.4); opacity: .9; } to { transform: scale(1.6); opacity: 0; } }
 
 @media (prefers-reduced-motion: reduce) { .cursor.moving { transition: opacity .25s; } .agent, .keycap { animation: none; } }
-
-/* The kinetic hero: just the window, filling the frame, with a camera that zooms in and out. */
-.demo.kinetic { padding: 0; height: 100vh; }
-.kinetic .tour, .kinetic .caption, .kinetic .cursor { display: none; }
-.kinetic .cam { position: relative; height: 100%; overflow: hidden; border-radius: 12px; border: 1px solid var(--bar-line); background: var(--win); }
-.kinetic .window { position: relative; height: 100%; display: flex; flex-direction: column; border: 0; border-radius: 0; box-shadow: none; transform-origin: 0 0; transition: transform 1s cubic-bezier(.5, .05, .2, 1); will-change: transform; }
-.kinetic .content { height: auto; flex: 1; min-height: 0; }

@@ -14,7 +14,7 @@ The product source and releases remain at https://github.com/roy-vinay/applied-a
 
 ## Live demos
 
-The demos (`demo/app.html?scenario=kinetic` in the hero, `demo/app.html?scenario=review` in the review section, and the guided tour at plain `demo/app.html`) run the Mac app's real preview code, copied unchanged into `demo/engine/` from the release named in `demo/engine/VERSION`. Around it, `demo/app.js` plays the part of the app: the toolbar, the editor, the history the command-line tool would keep, two agents editing the file, and a guided tour that only plays while the demo is on screen and stops when a visitor takes over. `demo/engine/preview.html` and `bridge.js` are the only demo-specific engine files.
+The two demos on the page (`demo/app.html`, and `demo/app.html?scenario=review`) run the Mac app's real preview code, copied unchanged into `demo/engine/` from the release named in `demo/engine/VERSION`. Around it, `demo/app.js` plays the part of the app: the toolbar, the editor, the history the command-line tool would keep, two agents editing the file, and a guided tour that only plays while the demo is on screen and stops when a visitor takes over. `demo/engine/preview.html` and `bridge.js` are the only demo-specific engine files.
 
 The demos need to be served over HTTP (as GitHub Pages does) because the demo window talks to the preview frame directly; opening `index.html` from disk won't run them.
 
