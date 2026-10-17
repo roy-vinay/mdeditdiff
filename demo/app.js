@@ -199,6 +199,7 @@
 
   async function base(kind) {
     await ready;
+    $("finder").hidden = true;
     clearSelection();
     hideAgent();
     if (pv.mdFindClose) pv.mdFindClose();
@@ -418,9 +419,45 @@
   // and the window and page size never change.
   var steps = [
     {
-      name: "Read", base: "start", run: async function () {
-        say("Reading.", "The plan opens as pages, with numbered thumbnails on the left.");
-        await sleep(1200);
+      name: "Open", base: "start", run: async function () {
+        var finder = $("finder"), menu = $("f-menu"), sub = $("f-sub");
+        finder.hidden = false;
+        finder.classList.remove("closing");
+        menu.hidden = true; sub.hidden = true;
+        finder.querySelectorAll(".f-row, .hot").forEach(function (r) { r.classList.remove("sel", "hot"); });
+        say("Opening a Markdown file.", "Any .md file opens in mdEditDiff from Finder: double-click it, or choose Open With.");
+        await sleep(1000);
+        var row = finder.querySelector('.f-row[data-file="export-plan.md"]');
+        await click(row, false);
+        row.classList.add("sel");
+        await sleep(500);
+        // Right-click: the context menu opens at the pointer.
+        var wr = $("window").getBoundingClientRect(), rr = row.getBoundingClientRect();
+        menu.style.left = (rr.left - wr.left + 150) + "px";
+        menu.style.top = (rr.top - wr.top + rr.height / 2) + "px";
+        menu.hidden = false;
+        await sleep(600);
+        var openWith = menu.querySelector(".f-openwith");
+        await pointTo(openWith, false);
+        openWith.classList.add("hot");
+        sub.hidden = false;
+        await sleep(500);
+        var app = $("f-app");
+        await pointTo(app, false);
+        app.classList.add("hot");
+        await sleep(450);
+        menu.hidden = true;
+        finder.classList.add("closing");
+        await sleep(500);
+        finder.hidden = true;
+        say("It opens as pages.", "Formatted, with numbered thumbnails, like a PDF in Preview.");
+        await sleep(1500);
+      }
+    },
+    {
+      name: "Read", run: async function () {
+        say("Reading.", "Scroll, or jump to a page from its thumbnail.");
+        await sleep(400);
         pv.scrollBy({ top: 360, behavior: "smooth" });
         await sleep(1300);
         await click(q('#thumb-list button[aria-label="Page 2"]'), true);
@@ -602,6 +639,7 @@
     setPlayButton();
     cursor.classList.remove("on");
     $("keycap").hidden = true;
+    $("finder").hidden = true; // a visitor taking over lands in the app, not in the Finder sketch
     if (!quiet && scenario === "tour") yourTurn();
   }
 
