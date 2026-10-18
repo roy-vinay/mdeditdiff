@@ -423,6 +423,12 @@ mdeditdiff checkpoint plan.md --author implementer --note "Split step 4 into two
 - **UTF-8 only.** Other encodings are refused rather than guessed.
 - **Moves are not detected.** A moved paragraph shows as removed in one place and added in another.
 
+## About
+
+<a href="https://www.linkedin.com/in/royvinay"><picture><source media="(prefers-color-scheme: dark)" srcset=".github/assets/about-dark.svg"><img src=".github/assets/about-light.svg" width="100%" alt="About Vinay Roy: VP of Product at Burq.ai, leading Product and AI. Career from NVIDIA (2008), Qualcomm, Apple (Sidecar), Zeus Living, Vista, and a founding product role at an AI SaaS startup, to Burq.ai. Seven years as Head Instructor for the AI/ML executive program at UC Berkeley Executive Education. 3 US patents, MBA from Berkeley Haas, MS from IIT Roorkee."></picture></a>
+
+More projects and writing on [github.com/roy-vinay](https://github.com/roy-vinay).
+
 ## Contribute
 
 mdEditDiff is open source under the MIT license, and contributions are welcome: bug reports, ideas and
