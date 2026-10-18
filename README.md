@@ -3,6 +3,8 @@
   <img src=".github/assets/masthead-light.svg" width="100%" alt="mdEditDiff: tracks what changed in Markdown documents since each person or AI agent last read them, across sessions and coding tools. By Vinay Roy.">
 </picture>
 
+<p>&nbsp;</p>
+
 **[Website and live demo](https://roy-vinay.github.io/mdeditdiff/)** · [Download for Mac](https://github.com/roy-vinay/mdeditdiff/releases/latest/download/mdEditDiff-macOS.zip)
 
 mdEditDiff is a free, open-source tool (MIT license) for anyone who works on Markdown files alongside AI
