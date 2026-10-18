@@ -1,6 +1,6 @@
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset=".github/assets/masthead-dark.svg">
-  <img src=".github/assets/masthead-light.svg" width="100%" alt="mdEditDiff: an editor for people, a diff for agents. See what changed in a Markdown file since you last looked, and who changed it. By Vinay Roy.">
+  <img src=".github/assets/masthead-light.svg" width="100%" alt="mdEditDiff: tracks what changed in Markdown documents since each person or AI agent last read them, across sessions and coding tools. By Vinay Roy.">
 </picture>
 
 **[Website and live demo](https://roy-vinay.github.io/mdeditdiff/)** · [Download for Mac](https://github.com/roy-vinay/mdeditdiff/releases/latest/download/mdEditDiff-macOS.zip)
@@ -8,8 +8,10 @@
 mdEditDiff is a free, open-source tool (MIT license) for anyone who works on Markdown files alongside AI
 agents. It has two parts: a command-line tool and MCP server for agents, and a native Mac app for people.
 
-mdEditDiff keeps a private change history for every Markdown file you work on, and remembers where each
-reader, agent or person, last looked. Open a plan in the Mac app and you see exactly what changed since you
+Coding agents can already notice when a file changes. mdEditDiff answers a narrower question that they and git
+don't answer together: **what changed in this document since this particular person or agent last read it?**
+It keeps a private change history for every Markdown file you work on, including edits nobody committed, and
+remembers where each reader last looked, across sessions and across tools. Open a plan in the Mac app and you see exactly what changed since you
 last read it, highlighted in the document, with each agent's note, and one click brings back anything that
 was removed. Your agents ask the same history what changed and get back only the changed parts, word by
 word, instead of re-reading the whole file.
@@ -29,7 +31,7 @@ a person corrects a step, and the first agent revises it again. Coding agents do
 files like `plan.md`, `spec.md`, `NOTES.md`, `CLAUDE.md` and `AGENTS.md`.
 
 Every one of those readers needs the answer to the same question: **what changed since I last looked, and
-who changed it?** Today there is no good way to get it:
+who says they changed it?** Today's tools each answer part of it:
 
 - **Re-reading the whole file** costs tokens on every turn, and an agent comparing two long versions in
   its head easily misses a removed sentence.
@@ -37,11 +39,27 @@ who changed it?** Today there is no good way to get it:
   write many versions between commits. It also shows raw line diffs, where a rewrapped paragraph looks
   like a full rewrite.
 - **Notes from the last writer** ("I updated step 3") depend on the writer remembering, and can be wrong.
-- **Agent tools' own file tracking** only knows about that tool's reads, not about edits from people or
-  other agents.
+- **Coding agents' built-in change detection.** Claude Code, for example, notices when a file it read during
+  a session changes on disk, whoever changed it, and shows the agent what changed. That covers one session of
+  one tool. It resets when the session ends, and it isn't shared: Codex doesn't know what Claude Code saw,
+  and neither tool knows what you have read.
 
 The result: agents act on stale plans, people can't tell what an agent rewrote, and when two writers edit
 at once, the last write silently wins.
+
+## How it compares
+
+| | Baseline for "what changed" | Uncommitted edits | Across sessions | Across tools | Who changed it | For people |
+| --- | --- | --- | --- | --- | --- | --- |
+| **git** | The last commit, the same for everyone | No | Yes | Yes | Commit author | Yes, as line diffs |
+| **Editor history** (for example VS Code's Timeline) | Saved versions in that editor | Yes, in that editor | Yes | No | No | Yes |
+| **Coding agents' change detection** | What that agent read this session | Yes | No | No | No | No |
+| **mdEditDiff** | What **each reader** last saw | Yes | Yes | Yes, through the CLI and MCP | Only when the writer reports it | Yes, the Mac app |
+
+mdEditDiff doesn't replace git: commit as usual. It fills the gap between commits and between tools.
+[`examples/cross-tool.sh`](examples/cross-tool.sh) shows it: Claude Code, Codex and a person share a plan over
+three days in separate sessions, and each gets only the changes since its own last read, while `git diff`
+shows one diff for everyone.
 
 ## How it works
 
@@ -55,7 +73,7 @@ sequenceDiagram
     I->>F: changes_since → first look, full text
     H->>F: edits two steps in the Mac app and saves (r2, under your name)
     P->>F: revises, checkpoint "Proposed a row limit" (r3)
-    I->>F: changes_since → only what changed since r1, and who changed it
+    I->>F: changes_since → only what changed since r1, and who reported it
 ```
 
 1. **Every version is kept.** Each time an agent or the app touches a file through mdEditDiff, the file's
@@ -81,7 +99,7 @@ the tools ever modify your files.
 | --- | --- |
 | **A developer working with coding agents** (Claude Code, Cursor, Codex) | See exactly what the agent changed in its plan or spec since you last read it, correct it in a proper editor, and get back anything it deleted. |
 | **Building multi-agent workflows** | Let a planner, implementer and reviewer share one plan file. Each asks what changed since its last turn instead of re-reading everything, and leaves a note for the next. |
-| **Running long agent sessions** | Keep a running log of every version of a living document (`NOTES.md`, `TODO.md`, a design doc), with who changed what, without committing to git every few minutes. |
+| **Running long agent sessions** | Keep a running log of every version of a living document (`NOTES.md`, `TODO.md`, a design doc), with each writer's reported changes and notes, without committing to git every few minutes. |
 | **Writing or reviewing docs** | Read READMEs and specs as formatted documents on your Mac, make small fixes, and save without your editor reformatting the whole file. |
 
 When it helps most: any Markdown file that **more than one writer** touches, especially when some of them
@@ -375,6 +393,10 @@ The server offers six tools: `changes_since`, `mark_seen`, `checkpoint`, `histor
 mdeditdiff changes plan.md --reader implementer        # what changed since I last looked
 mdeditdiff checkpoint plan.md --author implementer --note "Split step 4 into two steps"
 ```
+
+**Give each tool its own reader name.** The history is shared, so name readers by who is reading: for example
+`MDEDITDIFF_READER=claude-code` in Claude Code's MCP settings, `MDEDITDIFF_READER=codex` for Codex, and your
+own name in the Mac app. Each then gets the changes since its own last look, even in a new session.
 
 **Tell your agents the protocol.** Paste this into your agent instructions (for example `CLAUDE.md` or
 `AGENTS.md`):
