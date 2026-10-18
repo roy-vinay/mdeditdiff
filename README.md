@@ -477,3 +477,7 @@ takes the screenshots on this page. To regenerate the terminal animation:
 
 Licensed under the [MIT license](LICENSE). The Mac app bundles [markdown-it](https://github.com/markdown-it/markdown-it)
 (MIT) for its preview.
+
+---
+
+*Independent project; not affiliated with or endorsed by my employer. No proprietary code, data, or confidential information.*
