@@ -491,4 +491,7 @@ Licensed under the [MIT license](LICENSE). The Mac app bundles [markdown-it](htt
 
 ---
 
-*Independent project; not affiliated with or endorsed by my employer. No proprietary code, data, or confidential information.*
+![Independent Project](https://img.shields.io/badge/Independent-Project-475569?style=flat)
+
+<sub><strong>Independently developed.</strong> Not affiliated with or endorsed by my employer.</sub><br>
+<sub><strong>Confidentiality:</strong> No proprietary code, data, or confidential information is included.</sub>
