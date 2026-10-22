@@ -197,7 +197,7 @@ body.thumbs-open .thumbs { display: block; }
 .thumb { display: inline-flex; flex-direction: column; align-items: center; gap: 6px; padding: 6px; border: 0; background: none; border-radius: 8px; cursor: pointer; color: var(--muted); }
 .thumb:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
 .thumb-frame { width: calc(var(--page-w) * var(--thumb-scale)); height: calc(var(--page-h) * var(--thumb-scale)); overflow: hidden; border-radius: 2px; background: var(--paper); box-shadow: 0 0 0 1px var(--rule), 0 1px 3px rgba(24, 26, 48, 0.12); pointer-events: none; }
-.thumb-inner { width: var(--page-w); height: var(--page-h); transform: scale(var(--thumb-scale)); transform-origin: 0 0; }
+.thumb-inner { width: var(--page-w); height: var(--page-h); transform: scale(var(--thumb-scale)); transform-origin: 0 0; text-align: left; }
 .thumb-inner .page { margin: 0; box-shadow: none; border-radius: 0; }
 .thumb-inner .page-num { display: none; }
 .thumb-pending .thumb-frame { background: repeating-linear-gradient(180deg, var(--paper) 0 18%, var(--rule) 18% 19%); opacity: 0.7; }
