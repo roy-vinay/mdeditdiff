@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.5.4
+
+- **Page thumbnails match the page:** text in the Pages sidebar was showing centered. It now keeps the page's own alignment.
+
 ## 0.5.3
 
 - **← and → turn pages,** like Preview: one page at a time, or a pair at a time in the two-page view. They still move the cursor while you type (in Find or a note), Shift+arrow still extends a selection, and when you've zoomed in wider than the window they scroll sideways as before.
